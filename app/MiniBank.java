@@ -1,5 +1,10 @@
 package app;
 
+import exception.BankException;
+import exception.InsufficientFundsException;
+import exception.InvalidAmountException;
+import util.BankSession;
+
 import static util.Validator.isValidMobile;
 import util.AnnotationValidator;
 import java.lang.reflect.Field;
@@ -18,7 +23,8 @@ import service.CommandParser;
 
 import java.util.Scanner;
 
-record BankInfo(String name, String branch) {}
+record BankInfo(String name, String branch) {
+}
 
 enum MenuOption {
     OPEN_ACCOUNT, DEPOSIT, WITHDRAW, TRANSFER, EXIT
@@ -30,14 +36,13 @@ public class MiniBank {
         Scanner sc = new Scanner(System.in);
 
         BankInfo bank = new BankInfo(
-            "MiniBank",
-            "CHARUSAT Main Branch"
-        );
+                "MiniBank",
+                "CHARUSAT Main Branch");
 
         Account[] accounts = {
-            new SavingsAccount("Riya", 5000, 1000),
-            new CurrentAccount("Aarav", 3000, 1000),
-            new FixedDepositAccount("Priya", 0)
+                new SavingsAccount("Riya", 5000, 1000),
+                new CurrentAccount("Aarav", 3000, 1000),
+                new FixedDepositAccount("Priya", 0)
         };
 
         System.out.println("================================");
@@ -47,34 +52,52 @@ public class MiniBank {
 
         System.out.println("\n--- Practical 2: Account Demo ---");
 
-        accounts[0].deposit(2000);
-        System.out.println(
-            accounts[0].getOwnerName()
-            + " balance after deposit: "
-            + accounts[0].getBalance()
-        );
+        try {
+            accounts[0].deposit(2000);
+            System.out.println(
+                    accounts[0].getOwnerName()
+                            + " balance after deposit: "
+                            + accounts[0].getBalance());
+        } catch (InvalidAmountException e) {
+            System.out.println("Deposit failed: " + e.getMessage());
+        } finally {
+            System.out.println("Deposit attempt completed.");
+        }
 
-        boolean success = accounts[0].withdraw(3000);
-        System.out.println("Withdraw 3000 successful: " + success);
-        System.out.println(
-            "Balance: " + accounts[0].getBalance()
-        );
+        try {
+            boolean success = accounts[0].withdraw(3000);
+            System.out.println("Withdraw 3000 successful: " + success);
+            System.out.println("Balance: " + accounts[0].getBalance());
+        } catch (InsufficientFundsException e) {
+            System.out.println("Withdrawal failed: " + e.getMessage());
+            System.out.println("Shortfall: ₹" + e.getShortfall());
+        } catch (InvalidAmountException e) {
+            System.out.println("Withdrawal failed: " + e.getMessage());
+        } finally {
+            System.out.println("Withdrawal attempt completed.");
+        }
 
-        success = accounts[0].withdraw(10000);
-        System.out.println("Withdraw 10000 successful: " + success);
-        System.out.println(
-            "Balance: " + accounts[0].getBalance()
-        );
+        try {
+            boolean success = accounts[0].withdraw(10000);
+            System.out.println("Withdraw 10000 successful: " + success);
+            System.out.println("Balance: " + accounts[0].getBalance());
+        } catch (InsufficientFundsException e) {
+            System.out.println("Withdrawal failed: " + e.getMessage());
+            System.out.println("Shortfall: ₹" + e.getShortfall());
+        } catch (InvalidAmountException e) {
+            System.out.println("Withdrawal failed: " + e.getMessage());
+        } finally {
+            System.out.println("Withdrawal attempt completed.");
+        }
 
         System.out.println("\nAll Accounts:");
         for (Account account : accounts) {
             System.out.println(
-                account.getAccountNumber()
-                + " | "
-                + account.getOwnerName()
-                + " | "
-                + account.getBalance()
-            );
+                    account.getAccountNumber()
+                            + " | "
+                            + account.getOwnerName()
+                            + " | "
+                            + account.getBalance());
         }
 
         System.out.println("\n--- Practical 3: Object Methods ---");
@@ -85,79 +108,64 @@ public class MiniBank {
         // Compare two accounts
         Account anotherAccount = new SavingsAccount("Riya", 4000, 1000);
         System.out.println(
-            "Two separate accounts equal: "
-            + accounts[0].equals(anotherAccount)
-        );
+                "Two separate accounts equal: "
+                        + accounts[0].equals(anotherAccount));
 
         // Check object type using instanceof
         Object testObject = accounts[0];
         System.out.println(
-            "Is testObject an Account? "
-            + (testObject instanceof Account)
-        );
+                "Is testObject an Account? "
+                        + (testObject instanceof Account));
 
         // Create a customer with an address
         Customer.Address address = new Customer.Address(
-            "123 Main Road",
-            "Anand",
-            "388001"
-        );
+                "123 Main Road",
+                "Anand",
+                "388001");
 
         Customer customer = new Customer(
-            "Riya",
-            "riya@example.com",
-            "9876543210",
-            address
-        );
+                "Riya",
+                "riya@example.com",
+                "9876543210",
+                address);
 
         Customer clonedCustomer = customer.clone();
 
         System.out.println("Customer ID: " + customer.getCustomerId());
         System.out.println("Customer name: " + customer.getName());
         System.out.println(
-            "Customer city: " + customer.getAddress().getCity()
-        );
+                "Customer city: " + customer.getAddress().getCity());
         System.out.println(
-            "Clone has same name: "
-            + clonedCustomer.getName().equals(customer.getName())
-        );
+                "Clone has same name: "
+                        + clonedCustomer.getName().equals(customer.getName()));
         System.out.println(
-            "Clone is a different object: " + (customer != clonedCustomer)
-        );
+                "Clone is a different object: " + (customer != clonedCustomer));
 
         System.out.println("\n--- Practical 4: Validation and Parsing ---");
 
         // 1. Test mobile validation
         System.out.println(
-            "Valid mobile: " + isValidMobile("9876543210")
-        );
+                "Valid mobile: " + isValidMobile("9876543210"));
         System.out.println(
-            "Invalid mobile: " + isValidMobile("12345")
-        );
+                "Invalid mobile: " + isValidMobile("12345"));
 
         // 2. Test email validation
         System.out.println(
-            "Valid email: " + Validator.isValidEmail("riya@example.com")
-        );
+                "Valid email: " + Validator.isValidEmail("riya@example.com"));
         System.out.println(
-            "Invalid email: " + Validator.isValidEmail("wrong-email")
-        );
+                "Invalid email: " + Validator.isValidEmail("wrong-email"));
 
         // 3. Test PAN validation
         System.out.println(
-            "Valid PAN: " + Validator.isValidPan("ABCDE1234F")
-        );
+                "Valid PAN: " + Validator.isValidPan("ABCDE1234F"));
         System.out.println(
-            "Invalid PAN: " + Validator.isValidPan("12345")
-        );
+                "Invalid PAN: " + Validator.isValidPan("12345"));
 
         // 4. Test IFSC validation
         System.out.println(
-            "Valid IFSC: " + Validator.isValidIfsc("SBIN0001234")
-        );
+                "Valid IFSC: " + Validator.isValidIfsc("SBIN0001234"));
         System.out.println(
-            "Invalid IFSC: " + Validator.isValidIfsc("BAD")
-        );
+                "Invalid IFSC: " + Validator.isValidIfsc("BAD"));
 
         // 5. Parse a banking command
         try {
@@ -172,46 +180,39 @@ public class MiniBank {
 
         // 6. Display an account statement
         System.out.println(
-            StatementFormatter.buildStatement(accounts[0])
-        );
+                StatementFormatter.buildStatement(accounts[0]));
 
         System.out.println("\n--- Practical 5: Inheritance and Polymorphism ---");
 
         for (Account account : accounts) {
             System.out.println(
-                account.getOwnerName()
-                + " | Account: " + account.getAccountNumber()
-                + " | Interest rate: " + account.interestRate() + "%"
-            );
+                    account.getOwnerName()
+                            + " | Account: " + account.getAccountNumber()
+                            + " | Interest rate: " + account.interestRate() + "%");
 
             if (account instanceof SavingsAccount savings) {
                 System.out.println(
-                    "Minimum balance: " + savings.getMinBalance()
-                );
+                        "Minimum balance: " + savings.getMinBalance());
             }
         }
 
         System.out.println(
-            "Savings can withdraw 1000: " + accounts[0].canWithdraw(1000)
-        );
+                "Savings can withdraw 1000: " + accounts[0].canWithdraw(1000));
 
         System.out.println(
-            "Current can withdraw 3500: " + accounts[1].canWithdraw(3500)
-        );
+                "Current can withdraw 3500: " + accounts[1].canWithdraw(3500));
 
         System.out.println(
-            "Fixed deposit can withdraw 100: " + accounts[2].canWithdraw(100)
-        );
+                "Fixed deposit can withdraw 100: " + accounts[2].canWithdraw(100));
 
         System.out.println("\n--- Practical 6: Interfaces and Lambdas ---");
 
         // 1. Test the default method from InterestBearing
         for (Account account : accounts) {
             System.out.println(
-                account.getOwnerName()
-                + " yearly interest: ₹"
-                + String.format("%.2f", account.yearlyInterest())
-            );
+                    account.getOwnerName()
+                            + " yearly interest: ₹"
+                            + String.format("%.2f", account.yearlyInterest()));
         }
 
         // 2. WithdrawRule using an anonymous class
@@ -223,24 +224,20 @@ public class MiniBank {
         };
 
         // 3. WithdrawRule using a lambda expression
-        WithdrawRule lambdaRule =
-                (account, amount) -> account.canWithdraw(amount);
+        WithdrawRule lambdaRule = (account, amount) -> account.canWithdraw(amount);
 
         System.out.println(
-            "Anonymous class allows savings withdrawal of 1000: "
-            + anonymousRule.allow(accounts[0], 1000)
-        );
+                "Anonymous class allows savings withdrawal of 1000: "
+                        + anonymousRule.allow(accounts[0], 1000));
 
         System.out.println(
-            "Lambda allows savings withdrawal of 1000: "
-            + lambdaRule.allow(accounts[0], 1000)
-        );
+                "Lambda allows savings withdrawal of 1000: "
+                        + lambdaRule.allow(accounts[0], 1000));
 
         // 4. Test the Premium marker interface
         System.out.println(
-            "Is savings account Premium? "
-            + (accounts[0] instanceof model.Premium)
-        );
+                "Is savings account Premium? "
+                        + (accounts[0] instanceof model.Premium));
 
         System.out.println("\n--- Practical 7: Annotations and Reflection ---");
 
@@ -263,6 +260,61 @@ public class MiniBank {
 
         String[] validErrors = AnnotationValidator.validate(accounts[0]);
         System.out.println("Valid account error count: " + validErrors.length);
+
+        System.out.println("\n--- Practical 8: Exception Handling ---");
+
+        // Test an insufficient-funds exception and its shortfall.
+        try {
+            accounts[0].withdraw(10000);
+        } catch (InsufficientFundsException e) {
+            System.out.println("Friendly error: " + e.getMessage());
+            System.out.println("Shortfall: ₹" + e.getShortfall());
+        } catch (InvalidAmountException e) {
+            System.out.println("Invalid withdrawal: " + e.getMessage());
+        } finally {
+            System.out.println("Withdrawal test completed.");
+        }
+
+        // Test a successful transfer.
+        try {
+            accounts[1].transfer(accounts[0], 500);
+        } catch (BankException e) {
+            System.out.println("Transfer failed: " + e.getMessage());
+        }
+
+        // Test try-with-resources even when an exception occurs.
+        try (BankSession session = new BankSession()) {
+            session.performOperation();
+            throw new IllegalStateException(
+                    "Simulated banking operation failure.");
+        } catch (IllegalStateException e) {
+            System.out.println("Session error: " + e.getMessage());
+        }
+
+        // Test invalid deposit amount.
+        try {
+            accounts[0].deposit(0);
+        } catch (InvalidAmountException e) {
+            System.out.println("Invalid deposit caught: " + e.getMessage());
+        }
+
+        // Test invalid withdrawal amount.
+        try {
+            accounts[0].withdraw(-100);
+        } catch (InvalidAmountException e) {
+            System.out.println(
+                    "Invalid withdrawal caught: " + e.getMessage());
+        } catch (InsufficientFundsException e) {
+            System.out.println(
+                    "Insufficient funds: " + e.getMessage());
+        }
+
+        // Test failed transfer to a null destination.
+        try {
+            accounts[0].transfer(null, 100);
+        } catch (BankException e) {
+            System.out.println("Invalid transfer caught: " + e.getMessage());
+        }
 
         boolean running = true;
 

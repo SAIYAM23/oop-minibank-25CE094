@@ -4,6 +4,10 @@ import java.util.Objects;
 import model.annotation.Id;
 import model.annotation.Positive;
 import model.annotation.MaxLength;
+import exception.InsufficientFundsException;
+import exception.InvalidAmountException;
+import exception.BankException;
+import exception.AccountNotFoundException;
 
 public abstract class Account implements Transactable, InterestBearing {
     @Id
@@ -32,21 +36,75 @@ public abstract class Account implements Transactable, InterestBearing {
         this(ownerName, 0);
     }
 
-    public void deposit(long amount) {
+    @Override
+    public void deposit(long amount) throws InvalidAmountException {
         if (amount <= 0) {
-            System.out.println("Deposit amount must be positive.");
-            return;
+            throw new InvalidAmountException(
+                    "Deposit amount must be greater than zero.");
         }
+
         balance += amount;
     }
 
-    public boolean withdraw(long amount) {
-        if (amount <= 0 || !canWithdraw(amount)) {
-            return false;
+    @Override
+    public boolean withdraw(long amount)
+            throws InsufficientFundsException, InvalidAmountException {
+
+        if (amount <= 0) {
+            throw new InvalidAmountException(
+                    "Withdrawal amount must be greater than zero.");
+        }
+
+        if (!canWithdraw(amount)) {
+            long shortfall = Math.max(0, amount - balance);
+
+            throw new InsufficientFundsException(
+                    "Withdrawal denied. Insufficient available funds.",
+                    shortfall);
         }
 
         balance -= amount;
         return true;
+    }
+
+    public void transfer(Account to, long amount) throws BankException {
+        try {
+            if (to == null || !to.isActive()) {
+                throw new AccountNotFoundException(
+                        "Destination account was not found or is inactive.");
+            }
+
+            if (to == this) {
+                throw new BankException(
+                        "Cannot transfer to the same account.");
+            }
+
+            if (amount <= 0) {
+                throw new InvalidAmountException(
+                        "Transfer amount must be greater than zero.");
+            }
+
+            // Check the source before changing either balance.
+            if (!canWithdraw(amount)) {
+                long shortfall = Math.max(0, amount - getBalance());
+                throw new InsufficientFundsException(
+                        "Transfer denied. Insufficient available funds.",
+                        shortfall);
+            }
+
+            // Validate all known failure conditions before changing balances.
+            withdraw(amount);
+            to.deposit(amount);
+
+            System.out.println(
+                    "Transfer of ₹" + amount + " to "
+                            + to.getOwnerName() + " successful.");
+
+        } catch (BankException e) {
+            throw e;
+        } finally {
+            System.out.println("Transfer attempt completed.");
+        }
     }
 
     public abstract double interestRate();
