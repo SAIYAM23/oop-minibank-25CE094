@@ -17,6 +17,7 @@ import model.FixedDepositAccount;
 import model.Command;
 import model.TransactionType;
 import model.WithdrawRule;
+import model.AccountWorker;
 import util.Validator;
 import util.StatementFormatter;
 import service.CommandParser;
@@ -315,6 +316,42 @@ public class MiniBank {
         } catch (BankException e) {
             System.out.println("Invalid transfer caught: " + e.getMessage());
         }
+
+        // Practical 9: Multithreading and Race Condition
+        System.out.println("\n===== Practical 9: Race Condition =====");
+
+        Account raceAccount = new SavingsAccount("Thread Test", 0, 0);
+
+        int numberOfThreads = 10;
+        int depositsPerThread = 100_000;
+        long depositAmount = 1;
+
+        Thread[] threads = new Thread[numberOfThreads];
+
+        for (int i = 0; i < numberOfThreads; i++) {
+            AccountWorker worker = new AccountWorker(
+                    raceAccount, depositsPerThread, depositAmount
+            );
+
+            threads[i] = new Thread(worker, "Worker-" + (i + 1));
+            threads[i].start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Main thread was interrupted.");
+                return;
+            }
+        }
+
+        long expectedBalance =
+                (long) numberOfThreads * depositsPerThread * depositAmount;
+
+        System.out.println("Expected balance: ₹" + expectedBalance);
+        System.out.println("Actual balance:   ₹" + raceAccount.getBalance());
 
         boolean running = true;
 
