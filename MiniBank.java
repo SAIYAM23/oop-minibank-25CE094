@@ -17,9 +17,9 @@ public class MiniBank {
         );
 
         Account[] accounts = {
-            new Account("Riya", 5000),
-            new Account("Aarav", 3000),
-            new Account("Priya")
+            new SavingsAccount("Riya", 5000, 1000),
+            new CurrentAccount("Aarav", 3000, 1000),
+            new FixedDepositAccount("Priya", 0)
         };
 
         System.out.println("================================");
@@ -65,7 +65,7 @@ public class MiniBank {
         System.out.println("Account details: " + accounts[0]);
 
         // Compare two accounts
-        Account anotherAccount = new Account("Riya", 4000);
+        Account anotherAccount = new SavingsAccount("Riya", 4000, 1000);
         System.out.println(
             "Two separate accounts equal: "
             + accounts[0].equals(anotherAccount)
@@ -155,6 +155,34 @@ public class MiniBank {
         // 6. Display an account statement
         System.out.println(
             StatementFormatter.buildStatement(accounts[0])
+        );
+
+        System.out.println("\n--- Practical 5: Inheritance and Polymorphism ---");
+
+        for (Account account : accounts) {
+            System.out.println(
+                account.getOwnerName()
+                + " | Account: " + account.getAccountNumber()
+                + " | Interest rate: " + account.interestRate() + "%"
+            );
+
+            if (account instanceof SavingsAccount savings) {
+                System.out.println(
+                    "Minimum balance: " + savings.getMinBalance()
+                );
+            }
+        }
+
+        System.out.println(
+            "Savings can withdraw 1000: " + accounts[0].canWithdraw(1000)
+        );
+
+        System.out.println(
+            "Current can withdraw 3500: " + accounts[1].canWithdraw(3500)
+        );
+
+        System.out.println(
+            "Fixed deposit can withdraw 100: " + accounts[2].canWithdraw(100)
         );
 
         boolean running = true;
