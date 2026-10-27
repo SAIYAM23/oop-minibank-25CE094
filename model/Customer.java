@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import model.annotation.Id;
 
 public class Customer implements Cloneable, Serializable {
     private static final long serialVersionUID = 1L;
@@ -8,6 +9,7 @@ public class Customer implements Cloneable, Serializable {
     private String name;
     private String email;
     private String mobile;
+    @Id
     private final String customerId;
     private Address address;
 
@@ -56,10 +58,9 @@ public class Customer implements Cloneable, Serializable {
             Customer copy = (Customer) super.clone();
             if (address != null) {
                 copy.address = new Address(
-                    address.getLine(),
-                    address.getCity(),
-                    address.getPincode()
-                );
+                        address.getLine(),
+                        address.getCity(),
+                        address.getPincode());
             }
             return copy;
         } catch (CloneNotSupportedException e) {
@@ -92,4 +93,13 @@ public class Customer implements Cloneable, Serializable {
             return pincode;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Customer ID: " + customerId
+                + "\nName: " + name
+                + "\nEmail: " + email
+                + "\nMobile: " + mobile;
+    }
+
 }

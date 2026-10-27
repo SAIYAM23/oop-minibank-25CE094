@@ -534,6 +534,74 @@ public class MiniBank {
 
         collectionProcessor.stop();
 
+        // Practical 13: Generic Repository and Reflection
+        System.out.println("\n===== Practical 13: Generic Repository =====");
+
+        service.Repository<Account> accountRepository = new service.Repository<>();
+
+        Account repositoryAccount1 = new SavingsAccount("Repository Riya", 5000, 1000);
+        Account repositoryAccount2 = new CurrentAccount("Repository Aarav", 2000, 1000);
+        Account repositoryAccount3 = new SavingsAccount("Repository Priya", 9000, 1000);
+
+        // Save multiple accounts using saveAll()
+        accountRepository.saveAll(
+                repositoryAccount1,
+                repositoryAccount2,
+                repositoryAccount3);
+
+        // Find one account using its @Id field
+        System.out.println("\nFind account by ID:");
+        System.out.println(
+                accountRepository.findById(
+                        repositoryAccount2.getAccountNumber()));
+
+        // Display all saved accounts
+        System.out.println("\nAll accounts in Repository<Account>:");
+        for (Account account : accountRepository.findAll()) {
+            System.out.println(account);
+        }
+
+        // Test delete()
+        System.out.println("\nDelete account test: "
+                + accountRepository.delete(
+                        repositoryAccount3.getAccountNumber()));
+
+        System.out.println("Accounts remaining: "
+                + accountRepository.findAll().size());
+
+        // Demonstrate that the same Repository works with Customer
+        service.Repository<Customer> customerRepository = new service.Repository<>();
+
+        Customer.Address repositoryAddress = new Customer.Address(
+                "10 Repository Road",
+                "Anand",
+                "388001");
+
+        Customer repositoryCustomer = new Customer(
+                "Meera",
+                "meera@example.com",
+                "9876543210",
+                repositoryAddress);
+
+        customerRepository.save(repositoryCustomer);
+
+        System.out.println("\nCustomer found by ID:");
+        System.out.println(
+                customerRepository.findById(
+                        repositoryCustomer.getCustomerId()));
+
+        // Demonstrate bounded generics: N must extend Number
+        System.out.println("\nRepository average examples:");
+        System.out.println(
+                "Integer average: "
+                        + service.Repository.average(
+                                new Integer[] { 10, 20, 30 }));
+
+        System.out.println(
+                "Double average: "
+                        + service.Repository.average(
+                                new Double[] { 2.5, 3.5, 4.0 }));
+
         boolean running = true;
 
         while (running) {
