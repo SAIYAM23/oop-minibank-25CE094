@@ -10,7 +10,7 @@ import exception.BankException;
 import exception.AccountNotFoundException;
 
 public abstract class Account implements Transactable, InterestBearing,
-        java.io.Serializable {
+        java.io.Serializable, Comparable<Account> {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -153,5 +153,10 @@ public abstract class Account implements Transactable, InterestBearing,
     @Override
     public int hashCode() {
         return Objects.hash(accountNumber);
+    }
+
+    @Override
+    public int compareTo(Account other) {
+        return this.accountNumber.compareTo(other.accountNumber);
     }
 }

@@ -479,6 +479,61 @@ public class MiniBank {
             System.out.println("Practical 11 error: " + e.getMessage());
         }
 
+        // Practical 12: Collections and Comparable/Comparator
+        System.out.println("\n===== Practical 12: Collections =====");
+
+        service.AccountStore accountStore = new service.AccountStore();
+
+        Account storeAccount1 = new SavingsAccount("Store Riya", 5000, 1000);
+
+        Account storeAccount2 = new CurrentAccount("Store Aarav", 2000, 1000);
+
+        Account storeAccount3 = new SavingsAccount("Store Priya", 9000, 1000);
+
+        // Add accounts to the HashMap-based store.
+        accountStore.add(storeAccount1);
+        accountStore.add(storeAccount2);
+        accountStore.add(storeAccount3);
+
+        // Look up an account by account number.
+        System.out.println("\nAccount lookup:");
+        System.out.println(
+                accountStore.get(storeAccount2.getAccountNumber()));
+
+        // Display accounts sorted by balance, highest first.
+        System.out.println("\nAccounts sorted by balance:");
+        for (Account account : accountStore.sortedByBalance()) {
+            System.out.println(
+                    account.getAccountNumber()
+                            + " | " + account.getOwnerName()
+                            + " | Balance: ₹" + account.getBalance());
+        }
+
+        // Demonstrate Comparable<Account> using account numbers.
+        System.out.println("\nAccounts sorted by account number:");
+        java.util.ArrayList<Account> accountsByNumber = accountStore.getAll();
+
+        java.util.Collections.sort(accountsByNumber);
+
+        for (Account account : accountsByNumber) {
+            System.out.println(
+                    account.getAccountNumber()
+                            + " | " + account.getOwnerName());
+        }
+
+        // Demonstrate ConcurrentHashMap in TransactionProcessor.
+        TransactionProcessor collectionProcessor = new TransactionProcessor();
+
+        collectionProcessor.addAccount(storeAccount1);
+        collectionProcessor.addAccount(storeAccount2);
+        collectionProcessor.addAccount(storeAccount3);
+
+        System.out.println(
+                "\nAccounts in ConcurrentHashMap: "
+                        + collectionProcessor.getSharedAccounts().size());
+
+        collectionProcessor.stop();
+
         boolean running = true;
 
         while (running) {
