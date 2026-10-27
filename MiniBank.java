@@ -1,38 +1,67 @@
 import java.util.Scanner;
 
-// Read-only bank information
 record BankInfo(String name, String branch) {}
 
-// Fixed set of actions available in MiniBank
 enum MenuOption {
-    OPEN_ACCOUNT,
-    DEPOSIT,
-    WITHDRAW,
-    TRANSFER,
-    EXIT
+    OPEN_ACCOUNT, DEPOSIT, WITHDRAW, TRANSFER, EXIT
 }
 
 public class MiniBank {
 
     public static void main(String[] args) {
-
         Scanner sc = new Scanner(System.in);
 
-        // Display application header
         BankInfo bank = new BankInfo(
-                "MiniBank",
-                "CHARUSAT Main Branch"
+            "MiniBank",
+            "CHARUSAT Main Branch"
         );
+
+        Account[] accounts = {
+            new Account("Riya", 5000),
+            new Account("Aarav", 3000),
+            new Account("Priya")
+        };
 
         System.out.println("================================");
         System.out.println("       " + bank.name());
         System.out.println("       " + bank.branch());
         System.out.println("================================");
 
+        System.out.println("\n--- Practical 2: Account Demo ---");
+
+        accounts[0].deposit(2000);
+        System.out.println(
+            accounts[0].getOwnerName()
+            + " balance after deposit: "
+            + accounts[0].getBalance()
+        );
+
+        boolean success = accounts[0].withdraw(3000);
+        System.out.println("Withdraw 3000 successful: " + success);
+        System.out.println(
+            "Balance: " + accounts[0].getBalance()
+        );
+
+        success = accounts[0].withdraw(10000);
+        System.out.println("Withdraw 10000 successful: " + success);
+        System.out.println(
+            "Balance: " + accounts[0].getBalance()
+        );
+
+        System.out.println("\nAll Accounts:");
+        for (Account account : accounts) {
+            System.out.println(
+                account.getAccountNumber()
+                + " | "
+                + account.getOwnerName()
+                + " | "
+                + account.getBalance()
+            );
+        }
+
         boolean running = true;
 
         while (running) {
-
             System.out.println("\n========== MAIN MENU ==========");
             System.out.println("1. Open Account");
             System.out.println("2. Deposit");
@@ -44,17 +73,13 @@ public class MiniBank {
             String input = sc.nextLine().trim();
             int choice;
 
-            // Handle non-numeric menu input
             try {
                 choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println(
-                        "Invalid input! Please enter a number from 1 to 5."
-                );
+                System.out.println("Please enter a number from 1 to 5.");
                 continue;
             }
 
-            // Convert the number into a MenuOption
             MenuOption option = switch (choice) {
                 case 1 -> MenuOption.OPEN_ACCOUNT;
                 case 2 -> MenuOption.DEPOSIT;
@@ -65,22 +90,15 @@ public class MiniBank {
             };
 
             if (option == null) {
-                System.out.println(
-                        "Invalid choice! Please enter a number from 1 to 5."
-                );
+                System.out.println("Invalid choice. Please try again.");
                 continue;
             }
 
-            // Display a placeholder for each selected option
             String message = switch (option) {
-                case OPEN_ACCOUNT ->
-                        "Open Account - to be implemented in a later lab.";
-                case DEPOSIT ->
-                        "Deposit - to be implemented in a later lab.";
-                case WITHDRAW ->
-                        "Withdraw - to be implemented in a later lab.";
-                case TRANSFER ->
-                        "Transfer - to be implemented in a later lab.";
+                case OPEN_ACCOUNT -> "Open Account - to be implemented in a later lab.";
+                case DEPOSIT -> "Deposit - to be implemented in a later lab.";
+                case WITHDRAW -> "Withdraw - to be implemented in a later lab.";
+                case TRANSFER -> "Transfer - to be implemented in a later lab.";
                 case EXIT -> "Thank you for using MiniBank!";
             };
 
