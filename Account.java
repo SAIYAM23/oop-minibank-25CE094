@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Account {
     private final String accountNumber;
     private String ownerName;
@@ -27,7 +29,6 @@ public class Account {
             System.out.println("Deposit amount must be positive.");
             return;
         }
-
         balance += amount;
     }
 
@@ -36,12 +37,10 @@ public class Account {
             System.out.println("Withdrawal amount must be positive.");
             return false;
         }
-
         if (balance >= amount) {
             balance -= amount;
             return true;
         }
-
         return false;
     }
 
@@ -59,5 +58,26 @@ public class Account {
 
     public boolean isActive() {
         return active;
+    }
+
+    @Override
+    public String toString() {
+        return accountNumber + " | " + ownerName + " | " + balance;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Account other)) {
+            return false;
+        }
+        return accountNumber.equals(other.accountNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accountNumber);
     }
 }

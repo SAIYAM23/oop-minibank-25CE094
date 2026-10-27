@@ -59,6 +59,54 @@ public class MiniBank {
             );
         }
 
+        System.out.println("\n--- Practical 3: Object Methods ---");
+
+        // Print an account using toString()
+        System.out.println("Account details: " + accounts[0]);
+
+        // Compare two accounts
+        Account anotherAccount = new Account("Riya", 4000);
+        System.out.println(
+            "Two separate accounts equal: "
+            + accounts[0].equals(anotherAccount)
+        );
+
+        // Check object type using instanceof
+        Object testObject = accounts[0];
+        System.out.println(
+            "Is testObject an Account? "
+            + (testObject instanceof Account)
+        );
+
+        // Create a customer with an address
+        Customer.Address address = new Customer.Address(
+            "123 Main Road",
+            "Anand",
+            "388001"
+        );
+
+        Customer customer = new Customer(
+            "Riya",
+            "riya@example.com",
+            "9876543210",
+            address
+        );
+
+        Customer clonedCustomer = customer.clone();
+
+        System.out.println("Customer ID: " + customer.getCustomerId());
+        System.out.println("Customer name: " + customer.getName());
+        System.out.println(
+            "Customer city: " + customer.getAddress().getCity()
+        );
+        System.out.println(
+            "Clone has same name: "
+            + clonedCustomer.getName().equals(customer.getName())
+        );
+        System.out.println(
+            "Clone is a different object: " + (customer != clonedCustomer)
+        );
+
         boolean running = true;
 
         while (running) {
