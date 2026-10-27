@@ -3,11 +3,12 @@ package app;
 import exception.BankException;
 import exception.InsufficientFundsException;
 import exception.InvalidAmountException;
-import util.BankSession;
 
 import static util.Validator.isValidMobile;
 import util.AnnotationValidator;
-import java.lang.reflect.Field;
+import util.Validator;
+import util.StatementFormatter;
+import util.BankSession;
 
 import model.Account;
 import model.Customer;
@@ -18,10 +19,13 @@ import model.Command;
 import model.TransactionType;
 import model.WithdrawRule;
 import model.AccountWorker;
-import util.Validator;
-import util.StatementFormatter;
-import service.CommandParser;
 
+import service.CommandParser;
+import service.TransactionProcessor;
+import service.TransactionBuffer;
+import service.DeadlockDemo;
+
+import java.lang.reflect.Field;
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {
@@ -330,8 +334,7 @@ public class MiniBank {
 
         for (int i = 0; i < numberOfThreads; i++) {
             AccountWorker worker = new AccountWorker(
-                    raceAccount, depositsPerThread, depositAmount
-            );
+                    raceAccount, depositsPerThread, depositAmount);
 
             threads[i] = new Thread(worker, "Worker-" + (i + 1));
             threads[i].start();
@@ -347,11 +350,95 @@ public class MiniBank {
             }
         }
 
-        long expectedBalance =
-                (long) numberOfThreads * depositsPerThread * depositAmount;
+        long expectedBalance = (long) numberOfThreads * depositsPerThread * depositAmount;
 
         System.out.println("Expected balance: ₹" + expectedBalance);
         System.out.println("Actual balance:   ₹" + raceAccount.getBalance());
+
+        // Practical 10: Transaction Processor
+        System.out.println("\n===== Practical 10: Transaction Processor =====");
+
+        Account processorAccount = new SavingsAccount("Processor Test", 0, 0);
+
+        TransactionProcessor processor = new TransactionProcessor();
+
+        for (int i = 1; i <= 10; i++) {
+            final int taskId = i;
+
+            processor.submit(() -> {
+                try {
+                    processorAccount.deposit(100);
+
+                    System.out.println(
+                            Thread.currentThread().getName()
+                                    + " processed transaction " + taskId);
+                } catch (InvalidAmountException e) {
+                    System.out.println("Transaction failed: " + e.getMessage());
+                }
+            });
+        }
+
+        processor.stop();
+
+        System.out.println("Expected balance: ₹1000");
+        System.out.println(
+                "Actual balance:   ₹" + processorAccount.getBalance());
+
+        // Practical 10: Producer-Consumer
+        System.out.println("\n===== Practical 10: Producer-Consumer =====");
+
+        TransactionBuffer buffer = new TransactionBuffer(3);
+        int numberOfItems = 10;
+
+        Thread producer = new Thread(() -> {
+            try {
+                for (int i = 1; i <= numberOfItems; i++) {
+                    buffer.produce(i);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Producer interrupted.");
+            }
+        }, "Producer");
+
+        Thread consumer = new Thread(() -> {
+            try {
+                for (int i = 1; i <= numberOfItems; i++) {
+                    buffer.consume();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Consumer interrupted.");
+            }
+        }, "Consumer");
+
+        producer.start();
+        consumer.start();
+
+        try {
+            producer.join();
+            consumer.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Main thread interrupted.");
+            return;
+        }
+
+        System.out.println("Producer-consumer test completed.");
+
+        // Practical 10: Deadlock Prevention
+        System.out.println("\n===== Practical 10: Deadlock Prevention =====");
+
+        Account deadlockAccountA = new SavingsAccount("Deadlock A", 1000, 0);
+
+        Account deadlockAccountB = new SavingsAccount("Deadlock B", 1000, 0);
+
+        DeadlockDemo deadlockDemo = new DeadlockDemo();
+
+        deadlockDemo.demonstrateSafeLocking(
+                deadlockAccountA, deadlockAccountB);
+
+        System.out.println("Deadlock prevention test completed.");
 
         boolean running = true;
 
