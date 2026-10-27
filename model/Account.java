@@ -23,9 +23,22 @@ public abstract class Account implements Transactable, InterestBearing,
 
     private static long accountCounter = 0;
 
-    private static String generateAccountNumber() {
+    private static synchronized String generateAccountNumber() {
         accountCounter++;
         return String.format("AC%04d", accountCounter);
+    }
+
+    public static synchronized void restoreAccountCounter(String accountNumber) {
+        if (accountNumber == null || !accountNumber.matches("AC\\d+")) {
+            return;
+        }
+
+        try {
+            long number = Long.parseLong(accountNumber.substring(2));
+            accountCounter = Math.max(accountCounter, number);
+        } catch (NumberFormatException e) {
+            // Ignore invalid or excessively large account numbers.
+        }
     }
 
     public Account(String ownerName, long openingBalance) {

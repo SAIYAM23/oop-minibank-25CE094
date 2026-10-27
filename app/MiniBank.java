@@ -27,6 +27,7 @@ import service.DeadlockDemo;
 import service.AccountStorage;
 import service.TransactionLogger;
 import service.EndOfDayReport;
+import service.BankService;
 
 import java.lang.reflect.Field;
 import java.io.IOException;
@@ -43,6 +44,14 @@ public class MiniBank {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+
+        BankService bankService = new BankService();
+
+        try {
+            bankService.loadAccounts();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Could not load saved accounts: " + e.getMessage());
+        }
 
         BankInfo bank = new BankInfo(
                 "MiniBank",
@@ -605,12 +614,16 @@ public class MiniBank {
         boolean running = true;
 
         while (running) {
-            System.out.println("\n========== MAIN MENU ==========");
+            System.out.println("\n========== MINIBANK MAIN MENU ==========");
             System.out.println("1. Open Account");
             System.out.println("2. Deposit");
             System.out.println("3. Withdraw");
             System.out.println("4. Transfer");
-            System.out.println("5. Exit");
+            System.out.println("5. Account Statement");
+            System.out.println("6. List All Accounts");
+            System.out.println("7. End-of-Day Report");
+            System.out.println("8. Concurrent Batch Deposits");
+            System.out.println("9. Exit");
             System.out.print("Enter your choice: ");
 
             String input = sc.nextLine().trim();
@@ -619,39 +632,126 @@ public class MiniBank {
             try {
                 choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Please enter a number from 1 to 5.");
+                System.out.println("Please enter a number from 1 to 8.");
                 continue;
             }
 
-            MenuOption option = switch (choice) {
-                case 1 -> MenuOption.OPEN_ACCOUNT;
-                case 2 -> MenuOption.DEPOSIT;
-                case 3 -> MenuOption.WITHDRAW;
-                case 4 -> MenuOption.TRANSFER;
-                case 5 -> MenuOption.EXIT;
-                default -> null;
-            };
+            try {
+                switch (choice) {
+                    case 1 -> {
+                        System.out.print("Enter account holder name: ");
+                        String name = sc.nextLine().trim();
 
-            if (option == null) {
-                System.out.println("Invalid choice. Please try again.");
-                continue;
-            }
+                        System.out.print("Account type (SAVINGS/CURRENT): ");
+                        String type = sc.nextLine().trim();
 
-            String message = switch (option) {
-                case OPEN_ACCOUNT -> "Open Account - to be implemented in a later lab.";
-                case DEPOSIT -> "Deposit - to be implemented in a later lab.";
-                case WITHDRAW -> "Withdraw - to be implemented in a later lab.";
-                case TRANSFER -> "Transfer - to be implemented in a later lab.";
-                case EXIT -> "Thank you for using MiniBank!";
-            };
+                        System.out.print("Enter opening balance: ");
+                        long balance = Long.parseLong(sc.nextLine().trim());
 
-            System.out.println(message);
+                        Account account = bankService.openAccount(name, type, balance);
 
-            if (option == MenuOption.EXIT) {
-                running = false;
+                        System.out.println("Account opened successfully!");
+                        System.out.println("Account number: "
+                                + account.getAccountNumber());
+                        System.out.println("Account holder: "
+                                + account.getOwnerName());
+                        System.out.println("Balance: ₹"
+                                + account.getBalance());
+                    }
+
+                    case 2 -> {
+                        System.out.print("Enter account number: ");
+                        String accountNumber = sc.nextLine().trim();
+
+                        System.out.print("Enter deposit amount: ");
+                        long amount = Long.parseLong(sc.nextLine().trim());
+
+                        bankService.deposit(accountNumber, amount);
+                        System.out.println("Deposit successful.");
+                        System.out.println(bankService.statement(accountNumber));
+                    }
+
+                    case 3 -> {
+                        System.out.print("Enter account number: ");
+                        String accountNumber = sc.nextLine().trim();
+
+                        System.out.print("Enter withdrawal amount: ");
+                        long amount = Long.parseLong(sc.nextLine().trim());
+
+                        bankService.withdraw(accountNumber, amount);
+                        System.out.println("Withdrawal successful.");
+                        System.out.println(bankService.statement(accountNumber));
+                    }
+
+                    case 4 -> {
+                        System.out.print("Enter source account number: ");
+                        String from = sc.nextLine().trim();
+
+                        System.out.print("Enter destination account number: ");
+                        String to = sc.nextLine().trim();
+
+                        System.out.print("Enter transfer amount: ");
+                        long amount = Long.parseLong(sc.nextLine().trim());
+
+                        bankService.transfer(from, to, amount);
+                        System.out.println("Transfer completed.");
+                    }
+
+                    case 5 -> {
+                        System.out.print("Enter account number: ");
+                        String accountNumber = sc.nextLine().trim();
+
+                        System.out.println(
+                                bankService.statement(accountNumber));
+                    }
+
+                    case 6 -> {
+                        var accountList = bankService.listAccounts();
+
+                        if (accountList.isEmpty()) {
+                            System.out.println("No accounts found.");
+                        } else {
+                            System.out.println("\n--- All Accounts ---");
+                            accountList.forEach(System.out::println);
+                        }
+                    }
+
+                    case 7 -> EndOfDayReport.generateReport();
+
+                    case 8 -> {
+                        System.out.print("Enter account number: ");
+                        String accountNumber = sc.nextLine().trim();
+
+                        System.out.print("Amount per deposit: ");
+                        long amount = Long.parseLong(sc.nextLine().trim());
+
+                        System.out.print("Number of deposits: ");
+                        int count = Integer.parseInt(sc.nextLine().trim());
+
+                        bankService.processConcurrentDeposits(
+                                accountNumber, amount, count);
+                    }
+
+                    case 9 -> {
+                        bankService.saveAccounts();
+                        System.out.println("Accounts saved successfully.");
+                        System.out.println("Thank you for using MiniBank!");
+                        running = false;
+                    }
+
+                    default ->
+                        System.out.println("Invalid choice. Enter 1 to 8.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please enter a valid whole number.");
+            } catch (BankException e) {
+                System.out.println("Banking operation failed: " + e.getMessage());
+            } catch (IOException e) {
+                System.out.println("File operation failed: " + e.getMessage());
             }
         }
 
         sc.close();
+
     }
 }
