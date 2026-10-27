@@ -24,8 +24,12 @@ import service.CommandParser;
 import service.TransactionProcessor;
 import service.TransactionBuffer;
 import service.DeadlockDemo;
+import service.AccountStorage;
+import service.TransactionLogger;
+import service.EndOfDayReport;
 
 import java.lang.reflect.Field;
+import java.io.IOException;
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {
@@ -439,6 +443,41 @@ public class MiniBank {
                 deadlockAccountA, deadlockAccountB);
 
         System.out.println("Deadlock prevention test completed.");
+
+        // Practical 11: Persistence, Transaction Logs, and Reports
+        System.out.println("\n===== Practical 11: Persistence and Reports =====");
+
+        try {
+            // Save the three original accounts.
+            AccountStorage.save(accounts);
+            System.out.println("Accounts saved to accounts.dat.");
+
+            // Load accounts back from the file.
+            Account[] loadedAccounts = AccountStorage.load();
+            System.out.println("\nReloaded accounts:");
+
+            for (Account account : loadedAccounts) {
+                System.out.println(
+                        account.getAccountNumber()
+                                + " | " + account.getOwnerName()
+                                + " | Balance: ₹" + account.getBalance());
+            }
+
+            // Append example transactions to the log.
+            TransactionLogger.logTransaction(
+                    "DEPOSIT", accounts[0].getAccountNumber(), 500);
+
+            TransactionLogger.logTransaction(
+                    "WITHDRAW", accounts[1].getAccountNumber(), 200);
+
+            System.out.println("\nTransactions appended to the log.");
+
+            // Generate the end-of-day report.
+            EndOfDayReport.generateReport();
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Practical 11 error: " + e.getMessage());
+        }
 
         boolean running = true;
 

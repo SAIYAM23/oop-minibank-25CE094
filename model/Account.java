@@ -9,11 +9,14 @@ import exception.InvalidAmountException;
 import exception.BankException;
 import exception.AccountNotFoundException;
 
-public abstract class Account implements Transactable, InterestBearing {
+public abstract class Account implements Transactable, InterestBearing,
+        java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
     @Id
     @MaxLength(10)
     private final String accountNumber;
-    private String ownerName;
+    private transient String ownerName;
     @Positive
     private long balance;
     private boolean active;
@@ -117,6 +120,10 @@ public abstract class Account implements Transactable, InterestBearing {
 
     public String getOwnerName() {
         return ownerName;
+    }
+
+    public void restoreOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     public long getBalance() {
