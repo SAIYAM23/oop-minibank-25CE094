@@ -1,6 +1,8 @@
 package app;
 
 import static util.Validator.isValidMobile;
+import util.AnnotationValidator;
+import java.lang.reflect.Field;
 
 import model.Account;
 import model.Customer;
@@ -239,6 +241,28 @@ public class MiniBank {
             "Is savings account Premium? "
             + (accounts[0] instanceof model.Premium)
         );
+
+        System.out.println("\n--- Practical 7: Annotations and Reflection ---");
+
+        Account invalidAccount = new SavingsAccount("Test User", 1000, 0);
+
+        try {
+            Field balanceField = Account.class.getDeclaredField("balance");
+            balanceField.setAccessible(true);
+            balanceField.setLong(invalidAccount, -100);
+        } catch (ReflectiveOperationException e) {
+            System.out.println("Unable to prepare invalid account: " + e.getMessage());
+        }
+
+        String[] invalidErrors = AnnotationValidator.validate(invalidAccount);
+
+        System.out.println("Invalid account validation:");
+        for (String error : invalidErrors) {
+            System.out.println(error);
+        }
+
+        String[] validErrors = AnnotationValidator.validate(accounts[0]);
+        System.out.println("Valid account error count: " + validErrors.length);
 
         boolean running = true;
 

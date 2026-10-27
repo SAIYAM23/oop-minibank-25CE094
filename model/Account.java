@@ -1,10 +1,16 @@
 package model;
 
 import java.util.Objects;
+import model.annotation.Id;
+import model.annotation.Positive;
+import model.annotation.MaxLength;
 
 public abstract class Account implements Transactable, InterestBearing {
+    @Id
+    @MaxLength(10)
     private final String accountNumber;
     private String ownerName;
+    @Positive
     private long balance;
     private boolean active;
 
