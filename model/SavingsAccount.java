@@ -1,4 +1,6 @@
-public class SavingsAccount extends Account {
+package model;
+
+public class SavingsAccount extends Account implements Premium {
     private long minBalance;
 
     public SavingsAccount(String ownerName, long openingBalance, long minBalance) {

@@ -1,3 +1,19 @@
+package app;
+
+import static util.Validator.isValidMobile;
+
+import model.Account;
+import model.Customer;
+import model.SavingsAccount;
+import model.CurrentAccount;
+import model.FixedDepositAccount;
+import model.Command;
+import model.TransactionType;
+import model.WithdrawRule;
+import util.Validator;
+import util.StatementFormatter;
+import service.CommandParser;
+
 import java.util.Scanner;
 
 record BankInfo(String name, String branch) {}
@@ -111,10 +127,10 @@ public class MiniBank {
 
         // 1. Test mobile validation
         System.out.println(
-            "Valid mobile: " + Validator.isValidMobile("9876543210")
+            "Valid mobile: " + isValidMobile("9876543210")
         );
         System.out.println(
-            "Invalid mobile: " + Validator.isValidMobile("12345")
+            "Invalid mobile: " + isValidMobile("12345")
         );
 
         // 2. Test email validation
@@ -183,6 +199,45 @@ public class MiniBank {
 
         System.out.println(
             "Fixed deposit can withdraw 100: " + accounts[2].canWithdraw(100)
+        );
+
+        System.out.println("\n--- Practical 6: Interfaces and Lambdas ---");
+
+        // 1. Test the default method from InterestBearing
+        for (Account account : accounts) {
+            System.out.println(
+                account.getOwnerName()
+                + " yearly interest: ₹"
+                + String.format("%.2f", account.yearlyInterest())
+            );
+        }
+
+        // 2. WithdrawRule using an anonymous class
+        WithdrawRule anonymousRule = new WithdrawRule() {
+            @Override
+            public boolean allow(Account account, long amount) {
+                return account.canWithdraw(amount);
+            }
+        };
+
+        // 3. WithdrawRule using a lambda expression
+        WithdrawRule lambdaRule =
+                (account, amount) -> account.canWithdraw(amount);
+
+        System.out.println(
+            "Anonymous class allows savings withdrawal of 1000: "
+            + anonymousRule.allow(accounts[0], 1000)
+        );
+
+        System.out.println(
+            "Lambda allows savings withdrawal of 1000: "
+            + lambdaRule.allow(accounts[0], 1000)
+        );
+
+        // 4. Test the Premium marker interface
+        System.out.println(
+            "Is savings account Premium? "
+            + (accounts[0] instanceof model.Premium)
         );
 
         boolean running = true;
